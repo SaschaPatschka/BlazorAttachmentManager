@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -9,14 +9,37 @@
     <!-- NuGet Package Information -->
     <PackageId>BlazorFileManager</PackageId>
     <Version>1.0.0</Version>
-    <Authors>Your Name</Authors>
-    <Company>Your Company</Company>
-    <Description>A reusable Blazor component for file upload, download, and preview with drag &amp; drop, clipboard paste support, and customizable templates.</Description>
-    <PackageTags>blazor;file-upload;drag-drop;file-manager;component</PackageTags>
-    <RepositoryUrl>https://github.com/yourusername/BlazorFileManager</RepositoryUrl>
+    <Authors>Sascha Patschka</Authors>
+    <Company>Sascha Patschka</Company>
+    <Product>Blazor File Manager</Product>
+    <Description>A comprehensive Blazor component for file upload, download, and preview with drag &amp; drop, clipboard paste support, customizable templates, multi-language support, and pluggable storage backends (local filesystem, in-memory, or custom). Perfect for building modern file management UIs in Blazor Server and WebAssembly applications.</Description>
+    <PackageTags>blazor;blazor-component;file-upload;drag-drop;file-manager;clipboard;storage;multilanguage;localization;razor-component</PackageTags>
+    <PackageProjectUrl>https://github.com/SaschaPatschka/BlazorAttachmentManager</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SaschaPatschka/BlazorAttachmentManager</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>NUGET_README.md</PackageReadmeFile>
+    <PackageReleaseNotes>Version 1.0.0: Unified upload pipeline with ClipboardBrowserFile, storage service thumbnail caching, comprehensive multi-language support (40+ labels), manual upload workflow, and enhanced error handling.</PackageReleaseNotes>
+    <Copyright>Copyright � 2025 Sascha Patschka</Copyright>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <Title>Blazor FileManager</Title>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Include README for NuGet.org -->
+    <None Include="NUGET_README.md" Pack="true" PackagePath="\" />
+    <!-- Include all documentation files -->
+    <None Include="README.md" Pack="true" PackagePath="docs\" />
+    <None Include="STORAGE.md" Pack="true" PackagePath="docs\" />
+    <None Include="MANUAL_UPLOAD.md" Pack="true" PackagePath="docs\" />
+    <None Include="MULTILANGUAGE.md" Pack="true" PackagePath="docs\" />
+    <None Include="CLIPBOARD_BEHAVIOR.md" Pack="true" PackagePath="docs\" />
+    <None Include="EXAMPLES.md" Pack="true" PackagePath="docs\" />
+    <None Include="QUICKSTART.md" Pack="true" PackagePath="docs\" />
+    <None Include="CHANGELOG.md" Pack="true" PackagePath="docs\" />
+  </ItemGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
