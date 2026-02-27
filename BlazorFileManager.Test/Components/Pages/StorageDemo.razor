@@ -1,0 +1,141 @@
+@page "/storage-demo"
+@using BlazorFileManager.Components
+@using BlazorFileManager.Services
+@inject IFileStorageService? StorageService
+@rendermode InteractiveServer
+
+<PageTitle>Storage Demo</PageTitle>
+
+<div class="container mt-4">
+    <h1>File Storage Demo</h1>
+    <p class="lead">Diese Seite demonstriert die Verwendung des Storage Services.</p>
+
+    @if (StorageService == null)
+    {
+        <div class="alert alert-warning">
+            <h4>⚠️ Kein Storage Service konfiguriert</h4>
+            <p>Um den Storage Service zu nutzen, fügen Sie in <code>Program.cs</code> hinzu:</p>
+            <pre><code>builder.Services.AddFileManagerLocalStorage();</code></pre>
+            <p>Die Komponente funktioniert trotzdem im <strong>In-Memory Modus</strong>.</p>
+        </div>
+
+        <FileUploadManager 
+            Title="File Manager (In-Memory Modus)"
+            Files="@uploadedFiles"
+            FilesChanged="@((files) => uploadedFiles = files)"
+            OnFileUploaded="@HandleFileUploaded"
+            OnFileDeleted="@HandleFileDeleted"
+            Options="@fileOptions" />
+    }
+    else
+    {
+        <div class="alert alert-success">
+            <h4>✓ Storage Service aktiv</h4>
+            <p>Storage Type: <strong>@StorageService.GetType().Name</strong></p>
+            @if (StorageService is LocalFileStorageService)
+            {
+                <p>Dateien werden im lokalen Dateisystem gespeichert.</p>
+            }
+            else if (StorageService is InMemoryFileStorageService)
+            {
+                <p>Dateien werden im Arbeitsspeicher gespeichert (nur für Tests!).</p>
+            }
+        </div>
+
+        <FileUploadManager 
+            StorageService="@StorageService"
+            Title="File Manager (mit Storage Service)"
+            Files="@uploadedFiles"
+            FilesChanged="@((files) => uploadedFiles = files)"
+            OnFileUploaded="@HandleFileUploaded"
+            OnFileDeleted="@HandleFileDeleted"
+            Options="@fileOptions" />
+    }
+
+    @if (uploadedFiles.Any())
+    {
+        <div class="mt-4">
+            <h3>Hochgeladene Dateien (@uploadedFiles.Count)</h3>
+            <ul class="list-group">
+                @foreach (var file in uploadedFiles)
+                {
+                    <li class="list-group-item">
+                        <strong>@file.FileName</strong> - 
+                        @file.FormattedFileSize - 
+                        @file.UploadDate.ToString("g") - 
+                        <span class="badge bg-info">@file.ContentType</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="mt-5">
+        <h3>Code-Beispiele</h3>
+        
+        <h4>1. Storage Service registrieren (Program.cs)</h4>
+        <pre><code>// Option 1: In-Memory Storage (für Tests)
+builder.Services.AddFileManagerInMemoryStorage();
+
+// Option 2: Local File System
+builder.Services.AddFileManagerLocalStorage(
+    basePath: "C:\\Uploads",
+    maxFileSize: 50 * 1024 * 1024
+);</code></pre>
+
+        <h4>2. In Komponente verwenden</h4>
+        <pre><code>@@inject IFileStorageService StorageService
+
+&lt;FileUploadManager 
+    StorageService="@@StorageService"
+    Files="@@uploadedFiles"
+    Options="@@fileOptions" /&gt;</code></pre>
+
+        <h4>3. Eigene Implementierung erstellen</h4>
+        <pre><code>public class MyCustomStorage : IFileStorageService
+{
+    public async Task&lt;FileUploadItem&gt; SaveFileAsync(
+        IBrowserFile file, 
+        CancellationToken cancellationToken = default)
+    {
+        // Ihre Logik hier (z.B. Azure Blob, AWS S3, etc.)
+        return new FileUploadItem { ... };
+    }
+    
+    // Weitere Methoden implementieren...
+}</code></pre>
+    </div>
+</div>
+
+@code {
+    private List<FileUploadItem> uploadedFiles = new();
+    
+    private FileUploadOptions fileOptions = new()
+    {
+        AllowMultiple = true,
+        MaxFileCount = 10,
+        MaxFileSize = 10 * 1024 * 1024, // 10 MB
+        AllowedFileTypes = new List<string> 
+        { 
+            "image/jpeg", 
+            "image/png", 
+            "image/gif",
+            "application/pdf",
+            "text/plain"
+        },
+        ShowPreview = true,
+        AllowDelete = true,
+        AllowDragDrop = true,
+        AllowPasteFromClipboard = true
+    };
+
+    private void HandleFileUploaded(FileUploadItem file)
+    {
+        Console.WriteLine($"✓ File uploaded: {file.FileName} ({file.FormattedFileSize})");
+    }
+
+    private void HandleFileDeleted(FileUploadItem file)
+    {
+        Console.WriteLine($"✗ File deleted: {file.FileName}");
+    }
+}

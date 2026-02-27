@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+
+    <!-- NuGet Package Information -->
+    <PackageId>BlazorFileManager</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Your Name</Authors>
+    <Company>Your Company</Company>
+    <Description>A reusable Blazor component for file upload, download, and preview with drag &amp; drop, clipboard paste support, and customizable templates.</Description>
+    <PackageTags>blazor;file-upload;drag-drop;file-manager;component</PackageTags>
+    <RepositoryUrl>https://github.com/yourusername/BlazorFileManager</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>

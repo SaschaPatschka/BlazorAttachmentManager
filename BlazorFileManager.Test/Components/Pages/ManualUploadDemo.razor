@@ -1,0 +1,191 @@
+@page "/manual-upload-demo"
+@using BlazorFileManager.Components
+@using BlazorFileManager.Services
+@inject IFileStorageService? StorageService
+@rendermode InteractiveServer
+
+<PageTitle>Manual Upload Demo</PageTitle>
+
+<div class="container mt-4">
+    <h1>📤 Manual Upload Demo</h1>
+    <p class="lead">Dateien werden erst hochgeladen, wenn Sie auf "Upload" klicken.</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Standard Upload Button</h3>
+            <FileUploadManager 
+                @ref="fileManager"
+                StorageService="@StorageService"
+                Title="Manual Upload File Manager"
+                Files="@uploadedFiles"
+                FilesChanged="@((files) => uploadedFiles = files)"
+                OnFileUploaded="@HandleFileUploaded"
+                Options="@manualUploadOptions" />
+        </div>
+
+        <div class="col-md-6">
+            <h3>Custom Upload Button</h3>
+            <FileUploadManager 
+                @ref="customFileManager"
+                StorageService="@StorageService"
+                Title="Custom Upload Button"
+                Files="@customUploadedFiles"
+                FilesChanged="@((files) => customUploadedFiles = files)"
+                OnFileUploaded="@HandleCustomFileUploaded"
+                Options="@manualUploadOptions">
+                
+                <UploadButtonTemplate>
+                    <div class="custom-upload-section">
+                        <button type="button" 
+                                class="btn btn-lg btn-success w-100" 
+                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 1rem; font-weight: bold;"
+                                @onclick="async () => await customFileManager!.UploadFilesAsync()">
+                            🚀 Jetzt hochladen!
+                        </button>
+                    </div>
+                </UploadButtonTemplate>
+            </FileUploadManager>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h3>Programmgesteuerte Kontrolle</h3>
+        <div class="btn-group">
+            <button class="btn btn-primary" @onclick="UploadProgrammatically">
+                ⬆️ Upload Programmatically
+            </button>
+            <button class="btn btn-warning" @onclick="ClearPending">
+                🗑️ Clear Pending Files
+            </button>
+        </div>
+    </div>
+
+    @if (uploadedFiles.Any() || customUploadedFiles.Any())
+    {
+        <div class="mt-5">
+            <h3>Hochgeladene Dateien</h3>
+            
+            @if (uploadedFiles.Any())
+            {
+                <h5>Standard Upload (@uploadedFiles.Count Dateien)</h5>
+                <ul class="list-group mb-3">
+                    @foreach (var file in uploadedFiles)
+                    {
+                        <li class="list-group-item">
+                            <strong>@file.FileName</strong> - @file.FormattedFileSize - @file.UploadDate.ToString("g")
+                        </li>
+                    }
+                </ul>
+            }
+
+            @if (customUploadedFiles.Any())
+            {
+                <h5>Custom Upload (@customUploadedFiles.Count Dateien)</h5>
+                <ul class="list-group">
+                    @foreach (var file in customUploadedFiles)
+                    {
+                        <li class="list-group-item">
+                            <strong>@file.FileName</strong> - @file.FormattedFileSize - @file.UploadDate.ToString("g")
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    }
+
+    <div class="mt-5">
+        <h3>Code-Beispiele</h3>
+        
+        <h4>1. Manual Upload aktivieren</h4>
+        <pre><code>var options = new FileUploadOptions 
+{
+    AutoUpload = false,  // ✨ Deaktiviert automatischen Upload
+    MaxFileCount = 10,
+    MaxFileSize = 10 * 1024 * 1024
+};</code></pre>
+
+        <h4>2. Standard Manual Upload</h4>
+        <pre><code>&lt;FileUploadManager 
+    @@ref="fileManager"
+    Options="@@manualUploadOptions" /&gt;
+
+// Der Standard-Upload-Button wird automatisch angezeigt</code></pre>
+
+        <h4>3. Custom Upload Button</h4>
+        <pre><code>&lt;FileUploadManager @@ref="fileManager" Options="@@options"&gt;
+    &lt;UploadButtonTemplate&gt;
+        &lt;button @@onclick="async () => await fileManager.UploadFilesAsync()"&gt;
+            🚀 Jetzt hochladen!
+        &lt;/button&gt;
+    &lt;/UploadButtonTemplate&gt;
+&lt;/FileUploadManager&gt;</code></pre>
+
+        <h4>4. Programmatischer Upload</h4>
+        <pre><code>@@code {
+    private FileUploadManager? fileManager;
+
+    private async Task UploadProgrammatically()
+    {
+        if (fileManager != null)
+        {
+            await fileManager.UploadFilesAsync();
+        }
+    }
+
+    private void ClearPending()
+    {
+        fileManager?.ClearPendingFiles();
+    }
+}</code></pre>
+    </div>
+</div>
+
+@code {
+    private FileUploadManager? fileManager;
+    private FileUploadManager? customFileManager;
+    private List<FileUploadItem> uploadedFiles = new();
+    private List<FileUploadItem> customUploadedFiles = new();
+    
+    private FileUploadOptions manualUploadOptions = new()
+    {
+        AutoUpload = false,  // Deaktiviert automatischen Upload
+        AllowMultiple = true,
+        MaxFileCount = 10,
+        MaxFileSize = 10 * 1024 * 1024,
+        AllowedFileTypes = new List<string> 
+        { 
+            "image/jpeg", 
+            "image/png", 
+            "image/gif",
+            "application/pdf",
+            "text/plain"
+        },
+        ShowPreview = true,
+        AllowDelete = true,
+        AllowDragDrop = true,
+        AllowPasteFromClipboard = true
+    };
+
+    private async Task UploadProgrammatically()
+    {
+        if (fileManager != null)
+        {
+            await fileManager.UploadFilesAsync();
+        }
+    }
+
+    private void ClearPending()
+    {
+        fileManager?.ClearPendingFiles();
+    }
+
+    private void HandleFileUploaded(FileUploadItem file)
+    {
+        Console.WriteLine($"✓ Standard Upload: {file.FileName} ({file.FormattedFileSize})");
+    }
+
+    private void HandleCustomFileUploaded(FileUploadItem file)
+    {
+        Console.WriteLine($"✓ Custom Upload: {file.FileName} ({file.FormattedFileSize})");
+    }
+}

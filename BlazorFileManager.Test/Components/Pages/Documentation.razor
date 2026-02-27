@@ -1,0 +1,565 @@
+@page "/documentation"
+
+<div class="documentation-page">
+    <div class="page-header">
+        <h1>📖 Dokumentation</h1>
+        <p>Vollständige API-Dokumentation für das FileUploadManager Komponent</p>
+    </div>
+
+    <div class="doc-content">
+        <nav class="doc-nav">
+            <h3>Inhalt</h3>
+            <ul>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#basic-usage">Grundlegende Verwendung</a></li>
+                <li><a href="#parameters">Parameter</a></li>
+                <li><a href="#events">Events</a></li>
+                <li><a href="#templates">Templates</a></li>
+                <li><a href="#options">FileUploadOptions</a></li>
+                <li><a href="#file-item">FileUploadItem</a></li>
+                <li><a href="#custom-processor">Custom File Processor</a></li>
+            </ul>
+        </nav>
+
+        <div class="doc-main">
+            <section id="installation">
+                <h2>Installation</h2>
+                <p>Fügen Sie die Projektreferenz zu Ihrem Blazor-Projekt hinzu:</p>
+                <div class="code-block">
+                    <pre><code>&lt;ItemGroup&gt;
+  &lt;ProjectReference Include="..\BlazorFileManager\BlazorFileManager.csproj" /&gt;
+&lt;/ItemGroup&gt;</code></pre>
+                </div>
+
+                <p>Importieren Sie den Namespace in <code>_Imports.razor</code>:</p>
+                <div class="code-block">
+                    <pre><code>@@using BlazorFileManager.Components</code></pre>
+                </div>
+
+                <p>Fügen Sie das JavaScript in Ihrer HTML-Datei hinzu:</p>
+                <div class="code-block">
+                    <pre><code>&lt;script src="_content/BlazorFileManager/fileUploadManager.js"&gt;&lt;/script&gt;</code></pre>
+                </div>
+            </section>
+
+            <section id="basic-usage">
+                <h2>Grundlegende Verwendung</h2>
+                <p>Das einfachste Beispiel:</p>
+                <div class="code-block">
+                    <pre><code>@@page "/upload"
+
+&lt;FileUploadManager @@bind-Files="files" /&gt;
+
+@@code {
+    private List&lt;FileUploadItem&gt; files = new();
+}</code></pre>
+                </div>
+            </section>
+
+            <section id="parameters">
+                <h2>Parameter</h2>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Typ</th>
+                            <th>Standard</th>
+                            <th>Beschreibung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Title</code></td>
+                            <td>string</td>
+                            <td>"File Manager"</td>
+                            <td>Titel im Header</td>
+                        </tr>
+                        <tr>
+                            <td><code>Options</code></td>
+                            <td>FileUploadOptions</td>
+                            <td>new()</td>
+                            <td>Konfigurationsoptionen</td>
+                        </tr>
+                        <tr>
+                            <td><code>Files</code></td>
+                            <td>List&lt;FileUploadItem&gt;</td>
+                            <td>new()</td>
+                            <td>Liste der hochgeladenen Dateien (Two-Way Binding)</td>
+                        </tr>
+                        <tr>
+                            <td><code>CustomFileProcessor</code></td>
+                            <td>Func&lt;IBrowserFile, Task&lt;FileUploadItem&gt;&gt;?</td>
+                            <td>null</td>
+                            <td>Custom Logik für Datei-Verarbeitung</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="events">
+                <h2>Events</h2>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Typ</th>
+                            <th>Beschreibung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>OnFileUploaded</code></td>
+                            <td>EventCallback&lt;FileUploadItem&gt;</td>
+                            <td>Wird ausgelöst, wenn eine Datei hochgeladen wurde</td>
+                        </tr>
+                        <tr>
+                            <td><code>OnFileDeleted</code></td>
+                            <td>EventCallback&lt;FileUploadItem&gt;</td>
+                            <td>Wird ausgelöst, wenn eine Datei gelöscht wurde</td>
+                        </tr>
+                        <tr>
+                            <td><code>OnFileDownloaded</code></td>
+                            <td>EventCallback&lt;FileUploadItem&gt;</td>
+                            <td>Wird ausgelöst, wenn eine Datei heruntergeladen wurde</td>
+                        </tr>
+                        <tr>
+                            <td><code>FilesChanged</code></td>
+                            <td>EventCallback&lt;List&lt;FileUploadItem&gt;&gt;</td>
+                            <td>Wird ausgelöst, wenn sich die Dateiliste ändert</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-block">
+                    <pre><code>&lt;FileUploadManager 
+    @@bind-Files="files"
+    OnFileUploaded="HandleUpload"
+    OnFileDeleted="HandleDelete" /&gt;
+
+@@code {
+    private async Task HandleUpload(FileUploadItem file)
+    {
+        // Datei an Server senden
+        await Http.PostAsync("api/files", ...);
+    }
+
+    private async Task HandleDelete(FileUploadItem file)
+    {
+        // Datei vom Server löschen
+        await Http.DeleteAsync($"api/files/{file.Id}");
+    }
+}</code></pre>
+                </div>
+            </section>
+
+            <section id="templates">
+                <h2>Templates</h2>
+                <p>Alle visuellen Elemente können mit RenderFragments angepasst werden:</p>
+
+                <h3>HeaderTemplate</h3>
+                <div class="code-block">
+                    <pre><code>&lt;FileUploadManager @@bind-Files="files"&gt;
+    &lt;HeaderTemplate&gt;
+        &lt;h2&gt;Mein Custom Header&lt;/h2&gt;
+    &lt;/HeaderTemplate&gt;
+&lt;/FileUploadManager&gt;</code></pre>
+                </div>
+
+                <h3>DropZoneTemplate</h3>
+                <div class="code-block">
+                    <pre><code>&lt;DropZoneTemplate&gt;
+    &lt;div&gt;Custom Drop Zone Inhalt&lt;/div&gt;
+&lt;/DropZoneTemplate&gt;</code></pre>
+                </div>
+
+                <h3>FileItemTemplate</h3>
+                <div class="code-block">
+                    <pre><code>&lt;FileItemTemplate Context="file"&gt;
+    &lt;div&gt;@@file.FileName - @@file.FormattedFileSize&lt;/div&gt;
+&lt;/FileItemTemplate&gt;</code></pre>
+                </div>
+
+                <h3>FooterTemplate</h3>
+                <div class="code-block">
+                    <pre><code>&lt;FooterTemplate&gt;
+    &lt;div&gt;Custom Footer&lt;/div&gt;
+&lt;/FooterTemplate&gt;</code></pre>
+                </div>
+            </section>
+
+            <section id="options">
+                <h2>FileUploadOptions</h2>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Typ</th>
+                            <th>Standard</th>
+                            <th>Beschreibung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>MaxFileCount</code></td>
+                            <td>int</td>
+                            <td>10</td>
+                            <td>Max. Anzahl Dateien (0 = unbegrenzt)</td>
+                        </tr>
+                        <tr>
+                            <td><code>MaxFileSize</code></td>
+                            <td>long</td>
+                            <td>10 MB</td>
+                            <td>Max. Dateigröße in Bytes</td>
+                        </tr>
+                        <tr>
+                            <td><code>AllowedFileTypes</code></td>
+                            <td>List&lt;string&gt;</td>
+                            <td>[]</td>
+                            <td>Erlaubte MIME-Typen</td>
+                        </tr>
+                        <tr>
+                            <td><code>UploadPath</code></td>
+                            <td>string</td>
+                            <td>"uploads"</td>
+                            <td>Upload-Pfad</td>
+                        </tr>
+                        <tr>
+                            <td><code>AllowDelete</code></td>
+                            <td>bool</td>
+                            <td>true</td>
+                            <td>Löschen erlauben</td>
+                        </tr>
+                        <tr>
+                            <td><code>AllowDragDrop</code></td>
+                            <td>bool</td>
+                            <td>true</td>
+                            <td>Drag & Drop aktivieren</td>
+                        </tr>
+                        <tr>
+                            <td><code>AllowPasteFromClipboard</code></td>
+                            <td>bool</td>
+                            <td>true</td>
+                            <td>Einfügen aus Zwischenablage</td>
+                        </tr>
+                        <tr>
+                            <td><code>ShowPreview</code></td>
+                            <td>bool</td>
+                            <td>true</td>
+                            <td>Vorschau anzeigen</td>
+                        </tr>
+                        <tr>
+                            <td><code>AllowMultiple</code></td>
+                            <td>bool</td>
+                            <td>true</td>
+                            <td>Mehrfachauswahl erlauben</td>
+                        </tr>
+                        <tr>
+                            <td><code>AcceptAttribute</code></td>
+                            <td>string?</td>
+                            <td>null</td>
+                            <td>Accept-Attribut für Input</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="file-item">
+                <h2>FileUploadItem</h2>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Typ</th>
+                            <th>Beschreibung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Id</code></td>
+                            <td>string</td>
+                            <td>Eindeutige ID</td>
+                        </tr>
+                        <tr>
+                            <td><code>FileName</code></td>
+                            <td>string</td>
+                            <td>Dateiname</td>
+                        </tr>
+                        <tr>
+                            <td><code>ContentType</code></td>
+                            <td>string</td>
+                            <td>MIME-Type</td>
+                        </tr>
+                        <tr>
+                            <td><code>FileSize</code></td>
+                            <td>long</td>
+                            <td>Größe in Bytes</td>
+                        </tr>
+                        <tr>
+                            <td><code>FilePath</code></td>
+                            <td>string</td>
+                            <td>Dateipfad</td>
+                        </tr>
+                        <tr>
+                            <td><code>UploadDate</code></td>
+                            <td>DateTime</td>
+                            <td>Upload-Zeitpunkt</td>
+                        </tr>
+                        <tr>
+                            <td><code>FileData</code></td>
+                            <td>byte[]?</td>
+                            <td>Dateidaten (optional)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ThumbnailUrl</code></td>
+                            <td>string?</td>
+                            <td>Vorschau-URL</td>
+                        </tr>
+                        <tr>
+                            <td><code>IsImage</code></td>
+                            <td>bool</td>
+                            <td>Ist eine Bilddatei</td>
+                        </tr>
+                        <tr>
+                            <td><code>IsPdf</code></td>
+                            <td>bool</td>
+                            <td>Ist eine PDF-Datei</td>
+                        </tr>
+                        <tr>
+                            <td><code>FormattedFileSize</code></td>
+                            <td>string</td>
+                            <td>Formatierte Größe (z.B. "2.5 MB")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="custom-processor">
+                <h2>Custom File Processor</h2>
+                <p>Implementieren Sie eigene Logik für die Dateiverarbeitung:</p>
+                <div class="code-block">
+                    <pre><code>&lt;FileUploadManager 
+    @@bind-Files="files"
+    CustomFileProcessor="ProcessFile" /&gt;
+
+@@code {
+    [Inject]
+    private HttpClient Http { get; set; }
+
+    private async Task&lt;FileUploadItem&gt; ProcessFile(IBrowserFile browserFile)
+    {
+        // Upload zu Server
+        using var content = new MultipartFormDataContent();
+        var fileContent = new StreamContent(
+            browserFile.OpenReadStream(maxFileSize)
+        );
+        content.Add(fileContent, "file", browserFile.Name);
+
+        var response = await Http.PostAsync("api/upload", content);
+        var serverPath = await response.Content.ReadAsStringAsync();
+
+        return new FileUploadItem
+        {
+            FileName = browserFile.Name,
+            ContentType = browserFile.ContentType,
+            FileSize = browserFile.Size,
+            FilePath = serverPath,
+            UploadDate = DateTime.Now
+        };
+    }
+}</code></pre>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+    .documentation-page {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        margin: 0 0 0.5rem;
+        color: #333;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: #666;
+        font-size: 1.1rem;
+    }
+
+    .doc-content {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .doc-nav {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 2rem;
+    }
+
+    .doc-nav h3 {
+        margin: 0 0 1rem;
+        color: #333;
+        font-size: 1.1rem;
+    }
+
+    .doc-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .doc-nav li {
+        margin-bottom: 0.5rem;
+    }
+
+    .doc-nav a {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+    }
+
+    .doc-nav a:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+
+    .doc-main {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .doc-main section {
+        margin-bottom: 3rem;
+    }
+
+    .doc-main section:last-child {
+        margin-bottom: 0;
+    }
+
+    .doc-main h2 {
+        color: #333;
+        margin: 0 0 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #667eea;
+    }
+
+    .doc-main h3 {
+        color: #495057;
+        margin: 1.5rem 0 1rem;
+    }
+
+    .doc-main p {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .doc-main code {
+        background: #f8f9fa;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-family: 'Consolas', monospace;
+        font-size: 0.9em;
+        color: #e83e8c;
+    }
+
+    .code-block {
+        margin: 1rem 0;
+        background: #1e1e1e;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .code-block pre {
+        margin: 0;
+        padding: 1.5rem;
+        overflow-x: auto;
+    }
+
+    .code-block code {
+        color: #d4d4d4;
+        background: transparent;
+        padding: 0;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .api-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+    }
+
+    .api-table th {
+        background: #f8f9fa;
+        padding: 0.75rem;
+        text-align: left;
+        border: 1px solid #dee2e6;
+        color: #495057;
+        font-weight: 600;
+    }
+
+    .api-table td {
+        padding: 0.75rem;
+        border: 1px solid #dee2e6;
+        color: #666;
+    }
+
+    .api-table tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+
+    .api-table code {
+        background: #e9ecef;
+        color: #495057;
+    }
+
+    @@media (max-width: 1024px) {
+        .doc-content {
+            grid-template-columns: 1fr;
+        }
+
+        .doc-nav {
+            position: relative;
+            top: 0;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .api-table {
+            font-size: 0.8rem;
+        }
+
+        .api-table th,
+        .api-table td {
+            padding: 0.5rem;
+        }
+    }
+</style>
+
+@code {
+
+}

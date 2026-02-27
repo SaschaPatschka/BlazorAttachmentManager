@@ -1,0 +1,553 @@
+@namespace BlazorFileManager.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using System.IO
+
+<div class="file-upload-manager" @ref="containerElement">
+    @if (HeaderTemplate != null)
+    {
+        @HeaderTemplate
+    }
+    else
+    {
+        <div class="file-upload-header">
+            <h3>@Title</h3>
+            @if (Options.MaxFileCount > 0)
+            {
+                <span class="file-count">@string.Format(Labels.FilesCountText, @Files.Count, Options.MaxFileCount)</span>
+            }
+        </div>
+    }
+
+    @if (ErrorMessages.Any())
+    {
+        <div class="file-upload-errors">
+            @foreach (var error in ErrorMessages)
+            {
+                <div class="alert alert-danger">
+                    @error
+                    <button type="button" class="btn-close" @onclick="() => ErrorMessages.Remove(error)"></button>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="file-upload-dropzone @(isDragging ? "dragging" : "")" 
+         id="paste-area-@inputId"
+         @ondrop="HandleDrop" 
+         @ondragenter="HandleDragEnter" 
+         @ondragleave="HandleDragLeave"
+         @ondragover:preventDefault="true"
+         tabindex="0">
+        
+        @if (DropZoneTemplate != null)
+        {
+            @DropZoneTemplate
+        }
+        else
+        {
+            <div class="dropzone-content">
+                <i class="upload-icon">📁</i>
+                <p>@Labels.DropzoneText</p>
+                @if (Options.AllowPasteFromClipboard)
+                {
+                    <p class="clipboard-hint">@Labels.ClipboardHint</p>
+
+                }
+            </div>
+        }
+
+        <InputFile OnChange="HandleFileSelected" 
+                   multiple="@Options.AllowMultiple" 
+                   accept="@Options.AcceptAttribute"
+                   class="file-input-hidden" 
+                   id="@inputId" />
+        
+        <label for="@inputId" class="file-input-label"></label>
+    </div>
+
+    @if (!Options.AutoUpload && PendingFiles.Any())
+    {
+        <div class="pending-files-section">
+            <div class="pending-files-header">
+                <h4>@Labels.PendingFilesTitle (@PendingFiles.Count)</h4>
+                <button type="button" class="btn btn-sm btn-secondary" @onclick="ClearPendingFiles">
+                    @Labels.ClearAllButton
+                </button>
+            </div>
+
+            <div class="pending-files-list">
+                @foreach (var file in PendingFiles)
+                {
+                    <div class="pending-file-item">
+                        <span class="pending-file-icon">📄</span>
+                        <div class="pending-file-info">
+                            <div class="pending-file-name">@file.Name</div>
+                            <div class="pending-file-size">@FormatBytes(file.Size)</div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemovePendingFile(file)">
+                            @Labels.RemoveFileButton
+                        </button>
+                    </div>
+                }
+            </div>
+
+            @if (UploadButtonTemplate != null)
+            {
+                @UploadButtonTemplate
+            }
+            else
+            {
+                <div class="upload-button-container">
+                    <button type="button" 
+                            class="btn btn-upload" 
+                            @onclick="UploadFilesAsync" 
+                            disabled="@isUploading">
+                        @if (isUploading)
+                        {
+                            <span>@Labels.UploadingText</span>
+                        }
+                        else
+                        {
+                            <span>@string.Format(Labels.UploadButton, PendingFiles.Count)</span>
+                        }
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+    @if (Options.AllowPasteFromClipboard)
+    {
+        if (PasteFromClipboardButtonTemplate != null)
+        {
+            @PasteFromClipboardButtonTemplate
+        }
+        else
+        {
+            <div class="clipboard-button-container">
+                <button type="button" class="btn btn-clipboard" @onclick="PasteFromClipboard">
+                    @Labels.ClipboardButtonText
+                </button>
+            </div>
+        }
+    }
+
+    @if (Files.Any())
+    {
+        <div class="file-list">
+            @foreach (var file in Files)
+            {
+                if (FileItemTemplate != null)
+                {
+                    @FileItemTemplate(file)
+                }
+                else
+                {
+                    <div class="file-item">
+                        @if (Options.ShowPreview && file.IsImage)
+                        {
+                            <div class="file-preview">
+                                <img src="@GetFilePreviewUrl(file)" alt="@file.FileName" />
+                            </div>
+                        }
+                        else if (Options.ShowPreview && file.IsPdf)
+                        {
+                            <div class="file-preview pdf-preview">
+                                <i class="file-icon">📄</i>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="file-preview">
+                                <i class="file-icon">📎</i>
+                            </div>
+                        }
+
+                        <div class="file-info">
+                            <div class="file-name" title="@file.FileName">@file.FileName</div>
+                            <div class="file-details">
+                                <span class="file-size">@file.FormattedFileSize</span>
+                                <span class="file-date">@file.UploadDate.ToString("g")</span>
+                            </div>
+                        </div>
+
+                        <div class="file-actions">
+                            <button type="button" class="btn btn-sm btn-primary" @onclick="() => DownloadFile(file)" title="Download">
+                                @Labels.DownloadButton
+                            </button>
+                            @if (Options.AllowDelete)
+                            {
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => DeleteFile(file)" title="Delete">
+                                    @Labels.DeleteButton
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+
+    @if (FooterTemplate != null)
+    {
+        @FooterTemplate
+    }
+</div>
+
+<style>
+    .file-upload-manager {
+        width: 100%;
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fff;
+    }
+
+    .file-upload-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .file-upload-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    .file-count {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .file-upload-errors {
+        margin-bottom: 1rem;
+    }
+
+    .alert {
+        position: relative;
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+
+    .alert-danger {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+
+    .btn-close {
+        float: right;
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1;
+        color: #000;
+        text-shadow: 0 1px 0 #fff;
+        opacity: .5;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+    }
+
+    .file-upload-dropzone {
+        position: relative;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        background-color: #fafafa;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .file-upload-dropzone:hover {
+        border-color: #999;
+        background-color: #f0f0f0;
+    }
+
+    .file-upload-dropzone.dragging {
+        border-color: #007bff;
+        background-color: #e7f3ff;
+    }
+
+    .dropzone-content {
+        pointer-events: none;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .clipboard-hint {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .btn-clipboard {
+        color: #fff;
+        background-color: #6c757d;
+        border-color: #6c757d;
+        pointer-events: auto;
+    }
+
+    .btn-clipboard:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+    }
+
+    .btn-clipboard:active {
+        background-color: #545b62;
+        transform: scale(0.98);
+    }
+
+    .clipboard-button-container {
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    .file-input-hidden {
+        display: none;
+    }
+
+    .file-input-label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-list {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .file-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background-color: #fff;
+        transition: box-shadow 0.2s;
+    }
+
+    .file-item:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .file-preview {
+        width: 60px;
+        height: 60px;
+        margin-right: 1rem;
+        border-radius: 4px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f5f5f5;
+        flex-shrink: 0;
+    }
+
+    .file-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .file-icon {
+        font-size: 2rem;
+    }
+
+    .file-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .file-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .file-details {
+        font-size: 0.85rem;
+        color: #666;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .file-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .btn {
+        display: inline-block;
+        font-weight: 400;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        user-select: none;
+        border: 1px solid transparent;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        border-radius: 0.25rem;
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+        cursor: pointer;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-primary {
+        color: #fff;
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+
+    .btn-secondary {
+        color: #fff;
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+    }
+
+    .btn-danger {
+        color: #fff;
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+
+    .btn-upload {
+        color: #fff;
+        background-color: #28a745;
+        border-color: #28a745;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .btn-upload:hover:not(:disabled) {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-upload:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    /* Pending Files Section */
+    .pending-files-section {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+
+    .pending-files-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .pending-files-header h4 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #495057;
+    }
+
+    .pending-files-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .pending-file-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .pending-file-item:hover {
+        border-color: #007bff;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+    }
+
+    .pending-file-icon {
+        font-size: 1.5rem;
+        margin-right: 0.75rem;
+    }
+
+    .pending-file-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .pending-file-name {
+        font-weight: 600;
+        color: #212529;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .pending-file-size {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .upload-button-container {
+        margin-top: 1rem;
+    }
+</style>

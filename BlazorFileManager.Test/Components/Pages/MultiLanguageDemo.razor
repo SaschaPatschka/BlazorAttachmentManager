@@ -1,0 +1,200 @@
+@page "/multilanguage-demo"
+@using BlazorFileManager.Components
+@using BlazorFileManager.Services
+@inject IFileStorageService? StorageService
+@rendermode InteractiveServer
+
+<PageTitle>Multi-Language Demo</PageTitle>
+
+<div class="container mt-4">
+    <h1>🌍 Multi-Language Support Demo</h1>
+    <p class="lead">Die Komponente unterstützt mehrere Sprachen durch austauschbare Labels.</p>
+
+    <div class="mb-4">
+        <h3>Sprache wählen / Select Language / Choisir la langue</h3>
+        <div class="btn-group" role="group">
+            <button type="button" 
+                    class="btn @(currentLanguage == "English" ? "btn-primary" : "btn-outline-primary")" 
+                    @onclick='() => SetLanguage("English")'>
+                🇬🇧 English
+            </button>
+            <button type="button" 
+                    class="btn @(currentLanguage == "Deutsch" ? "btn-primary" : "btn-outline-primary")" 
+                    @onclick='() => SetLanguage("Deutsch")'>
+                🇩🇪 Deutsch
+            </button>
+            <button type="button" 
+                    class="btn @(currentLanguage == "Français" ? "btn-primary" : "btn-outline-primary")" 
+                    @onclick='() => SetLanguage("Français")'>
+                🇫🇷 Français
+            </button>
+            <button type="button" 
+                    class="btn @(currentLanguage == "Custom" ? "btn-primary" : "btn-outline-primary")" 
+                    @onclick='() => SetLanguage("Custom")'>
+                ⚙️ Custom
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h3>File Manager - @currentLanguage</h3>
+            <FileUploadManager 
+                StorageService="@StorageService"
+                Labels="@currentLabels"
+                Title="@GetTitle()"
+                Files="@uploadedFiles"
+                FilesChanged="@((files) => uploadedFiles = files)"
+                Options="@fileOptions" />
+        </div>
+
+        <div class="col-md-6">
+            <h3>Current Labels</h3>
+            <div class="alert alert-info">
+                <h5>🎨 Aktuell verwendete Texte:</h5>
+                <ul class="mb-0" style="font-size: 0.9rem;">
+                    <li><strong>Dropzone:</strong> @currentLabels.DropzoneText</li>
+                    <li><strong>Clipboard Hint:</strong> @currentLabels.ClipboardHint</li>
+                    <li><strong>Clipboard Button:</strong> @currentLabels.ClipboardButtonText</li>
+                    <li><strong>Download Button:</strong> @currentLabels.DownloadButton</li>
+                    <li><strong>Delete Button:</strong> @currentLabels.DeleteButton</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h3>Code-Beispiele</h3>
+        
+        <h4>1. English (Default)</h4>
+        <pre><code>&lt;FileUploadManager 
+    Labels="@@FileUploadLabels.English" /&gt;
+
+// oder einfach weglassen (English ist Standard)</code></pre>
+
+        <h4>2. Deutsch</h4>
+        <pre><code>&lt;FileUploadManager 
+    Labels="@@FileUploadLabels.German" /&gt;</code></pre>
+
+        <h4>3. Français</h4>
+        <pre><code>&lt;FileUploadManager 
+    Labels="@@FileUploadLabels.French" /&gt;</code></pre>
+
+        <h4>4. Custom Labels (z.B. Spanisch)</h4>
+        <pre><code>@@code {
+    private FileUploadLabels spanishLabels = new()
+    {
+        DropzoneText = "Arrastra y suelta archivos aquí o haz clic para explorar",
+        ClipboardHint = "También puedes pegar imágenes desde el portapapeles (Ctrl+V)",
+        ClipboardButtonText = "📋 Pegar desde el portapapeles",
+        DownloadButton = "⬇️ Descargar",
+        DeleteButton = "🗑️ Eliminar",
+        PendingFilesTitle = "📋 Archivos pendientes",
+        ClearAllButton = "Borrar todo",
+        UploadButton = "⬆️ Subir {0} archivo(s)",
+        UploadingText = "⏳ Subiendo...",
+        ErrorMaxFilesReached = "Número máximo de archivos ({0}) alcanzado.",
+        // ... weitere Labels
+    };
+}
+
+&lt;FileUploadManager Labels="@@spanishLabels" /&gt;</code></pre>
+
+        <h4>5. Dynamische Sprachwahl</h4>
+        <pre><code>@@code {
+    private string currentLanguage = "English";
+    private FileUploadLabels currentLabels = FileUploadLabels.English;
+
+    private void SetLanguage(string language)
+    {
+        currentLanguage = language;
+        currentLabels = language switch
+        {
+            "Deutsch" => FileUploadLabels.German,
+            "Français" => FileUploadLabels.French,
+            _ => FileUploadLabels.English
+        };
+    }
+}</code></pre>
+    </div>
+
+    <div class="mt-4 alert alert-success">
+        <h4>✅ Vorteile</h4>
+        <ul>
+            <li>Vollständige Kontrolle über alle Texte</li>
+            <li>Einfache Integration in bestehende Lokalisierungssysteme</li>
+            <li>3 vordefinierte Sprachen (English, Deutsch, Français)</li>
+            <li>Einfach erweiterbar für weitere Sprachen</li>
+            <li>Alle Error Messages lokalisierbar</li>
+        </ul>
+    </div>
+</div>
+
+@code {
+    private string currentLanguage = "English";
+    private FileUploadLabels currentLabels = FileUploadLabels.English;
+    private List<FileUploadItem> uploadedFiles = new();
+    
+    private FileUploadOptions fileOptions = new()
+    {
+        AutoUpload = false,
+        AllowMultiple = true,
+        MaxFileCount = 10,
+        MaxFileSize = 10 * 1024 * 1024,
+        ShowPreview = true,
+        AllowDelete = true,
+        AllowDragDrop = true,
+        AllowPasteFromClipboard = true
+    };
+
+    private void SetLanguage(string language)
+    {
+        currentLanguage = language;
+        currentLabels = language switch
+        {
+            "Deutsch" => FileUploadLabels.German,
+            "Français" => FileUploadLabels.French,
+            "Custom" => CreateCustomLabels(),
+            _ => FileUploadLabels.English
+        };
+    }
+
+    private string GetTitle()
+    {
+        return currentLanguage switch
+        {
+            "Deutsch" => "Datei-Manager",
+            "Français" => "Gestionnaire de fichiers",
+            "Custom" => "Archivo Manager (Español)",
+            _ => "File Manager"
+        };
+    }
+
+    private FileUploadLabels CreateCustomLabels()
+    {
+        // Beispiel: Spanisch
+        return new FileUploadLabels
+        {
+            DropzoneText = "Arrastra y suelta archivos aquí o haz clic para explorar",
+            ClipboardHint = "También puedes pegar imágenes desde el portapapeles (Ctrl+V)",
+            ClipboardButtonText = "📋 Pegar desde el portapapeles",
+            
+            PendingFilesTitle = "📋 Archivos pendientes",
+            ClearAllButton = "Borrar todo",
+            UploadButton = "⬆️ Subir {0} archivo(s)",
+            UploadingText = "⏳ Subiendo...",
+            RemoveFileButton = "✕",
+            
+            DownloadButton = "⬇️ Descargar",
+            DeleteButton = "🗑️ Eliminar",
+            
+            FilesCountText = "{0} / {1} archivos",
+            
+            ErrorMaxFilesReached = "Número máximo de archivos ({0}) alcanzado.",
+            ErrorFileTooLarge = "El archivo '{0}' excede el tamaño máximo de {1}.",
+            ErrorFileTypeNotAllowed = "El tipo de archivo '{0}' no está permitido para '{1}'.",
+            ErrorNoFilesToUpload = "No hay archivos para subir.",
+            ErrorUploadInProgress = "La carga ya está en progreso."
+        };
+    }
+}

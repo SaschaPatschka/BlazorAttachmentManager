@@ -1,0 +1,217 @@
+@page "/file-manager-demo"
+@using BlazorFileManager.Components
+
+<h1>File Upload Manager Demo</h1>
+
+<div style="display: grid; gap: 2rem; margin-top: 2rem;">
+    
+    <section>
+        <h2>Beispiel 1: Standard-Konfiguration</h2>
+        <FileUploadManager @bind-Files="files1" Title="Einfacher File Manager" />
+    </section>
+
+    <section>
+        <h2>Beispiel 2: Nur Bilder, max 3 Dateien</h2>
+        <FileUploadManager 
+            @bind-Files="files2"
+            Title="Bilder-Upload"
+            Options="imageOptions"
+            OnFileUploaded="HandleImageUploaded" />
+    </section>
+
+    <section>
+        <h2>Beispiel 3: Mit benutzerdefinierten Templates</h2>
+        <FileUploadManager @bind-Files="files3" Options="customOptions">
+            <HeaderTemplate>
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; color: white; border-radius: 8px; margin-bottom: 1rem;">
+                    <h3 style="margin: 0; color: white;">🎨 Mein Custom File Manager</h3>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Hochgeladene Dateien: @files3.Count</p>
+                </div>
+            </HeaderTemplate>
+
+            <DropZoneTemplate>
+                <div style="padding: 3rem; text-align: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 8px;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📤</div>
+                    <h3 style="margin: 0;">Dateien hier ablegen</h3>
+                    <p style="color: #666; margin: 0.5rem 0;">oder klicken zum Durchsuchen</p>
+                </div>
+            </DropZoneTemplate>
+
+            <FileItemTemplate Context="file">
+                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); border-radius: 8px; margin-bottom: 0.5rem;">
+                    <div style="font-size: 2rem;">
+                        @if (file.IsImage)
+                        {
+                            <span>🖼️</span>
+                        }
+                        else if (file.IsPdf)
+                        {
+                            <span>📄</span>
+                        }
+                        else
+                        {
+                            <span>📎</span>
+                        }
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold;">@file.FileName</div>
+                        <div style="font-size: 0.85rem; opacity: 0.8;">@file.FormattedFileSize</div>
+                    </div>
+                    <button @onclick="() => DeleteCustomFile(file)" style="background: #ff6b6b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                        Löschen
+                    </button>
+                </div>
+            </FileItemTemplate>
+
+            <FooterTemplate>
+                <div style="margin-top: 1rem; padding: 1rem; background: #f0f0f0; border-radius: 8px; text-align: center;">
+                    <strong>Gesamt: @files3.Count Dateien, @FormatTotalSize(files3) gesamt</strong>
+                </div>
+            </FooterTemplate>
+        </FileUploadManager>
+    </section>
+
+    <section>
+        <h2>Beispiel 4: Nur PDF, keine Löschung</h2>
+        <FileUploadManager 
+            @bind-Files="files4"
+            Title="PDF Dokumente"
+            Options="pdfOptions" />
+    </section>
+
+    <section>
+        <h2>Beispiel 5: Event-Handling Demo</h2>
+        <FileUploadManager 
+            @bind-Files="files5"
+            Title="Event-Tracking"
+            OnFileUploaded="LogFileUploaded"
+            OnFileDeleted="LogFileDeleted"
+            OnFileDownloaded="LogFileDownloaded" />
+
+        @if (eventLog.Any())
+        {
+            <div style="margin-top: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 8px; max-height: 200px; overflow-y: auto;">
+                <h4>Event Log:</h4>
+                <ul style="margin: 0; padding-left: 1.5rem; font-family: monospace; font-size: 0.85rem;">
+                    @foreach (var log in eventLog.TakeLast(10).Reverse())
+                    {
+                        <li>@log</li>
+                    }
+                </ul>
+            </div>
+        }
+    </section>
+
+    <section>
+        <h2>Beispiel 6: Automatische Bildkomprimierung 🔥</h2>
+        <div style="padding: 1rem; background: #fff3cd; border-left: 4px solid #ffc107; margin-bottom: 1rem; border-radius: 4px;">
+            <strong>💡 Hinweis:</strong> Bilder über 500 KB werden automatisch komprimiert!
+            <br/>
+            <small>Die Komprimierung erfolgt in mehreren Stufen (90%, 80%, 70%, 60%, 50%) bis die Datei klein genug ist.</small>
+        </div>
+        <FileUploadManager 
+            @bind-Files="files6"
+            Title="Bilder mit Auto-Komprimierung"
+            Options="compressionOptions" />
+    </section>
+
+</div>
+
+@code {
+    private List<FileUploadItem> files1 = new();
+    private List<FileUploadItem> files2 = new();
+    private List<FileUploadItem> files3 = new();
+    private List<FileUploadItem> files4 = new();
+    private List<FileUploadItem> files5 = new();
+    private List<FileUploadItem> files6 = new();
+    private List<string> eventLog = new();
+
+    private FileUploadOptions imageOptions = new()
+    {
+        MaxFileCount = 3,
+        MaxFileSize = 5 * 1024 * 1024, // 5MB
+        AllowedFileTypes = new List<string> { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" },
+        AcceptAttribute = "image/*",
+        AllowDelete = true,
+        ShowPreview = true
+    };
+
+    private FileUploadOptions customOptions = new()
+    {
+        MaxFileCount = 10,
+        MaxFileSize = 20 * 1024 * 1024, // 20MB
+        AllowDelete = false, // Deletion handled by custom template
+        AllowDragDrop = true,
+        AllowPasteFromClipboard = true
+    };
+
+    private FileUploadOptions pdfOptions = new()
+    {
+        MaxFileCount = 5,
+        MaxFileSize = 10 * 1024 * 1024, // 10MB
+        AllowedFileTypes = new List<string> { "application/pdf" },
+        AcceptAttribute = ".pdf",
+        AllowDelete = false,
+        ShowPreview = true
+    };
+
+    private FileUploadOptions compressionOptions = new()
+    {
+        MaxFileCount = 10,
+        MaxFileSize = 500 * 1024, // 500 KB - klein, um Komprimierung zu demonstrieren
+        AllowedFileTypes = new List<string> { "image/jpeg", "image/jpg", "image/png", "image/webp" },
+        AcceptAttribute = "image/*",
+        AutoCompressImages = true, // 🔥 Aktiviert automatische Komprimierung
+        CompressionQualityLevels = new List<double> { 0.9, 0.8, 0.7, 0.6, 0.5 },
+        MaxImageDimension = 1920,
+        AllowDelete = true,
+        ShowPreview = true,
+        AllowPasteFromClipboard = true
+    };
+
+    private Task HandleImageUploaded(FileUploadItem file)
+    {
+        Console.WriteLine($"Bild hochgeladen: {file.FileName} ({file.FormattedFileSize})");
+        return Task.CompletedTask;
+    }
+
+    private void DeleteCustomFile(FileUploadItem file)
+    {
+        files3.Remove(file);
+    }
+
+    private string FormatTotalSize(List<FileUploadItem> files)
+    {
+        var totalBytes = files.Sum(f => f.FileSize);
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = totalBytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private Task LogFileUploaded(FileUploadItem file)
+    {
+        eventLog.Add($"[{DateTime.Now:HH:mm:ss}] UPLOAD: {file.FileName} ({file.FormattedFileSize})");
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task LogFileDeleted(FileUploadItem file)
+    {
+        eventLog.Add($"[{DateTime.Now:HH:mm:ss}] DELETE: {file.FileName}");
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task LogFileDownloaded(FileUploadItem file)
+    {
+        eventLog.Add($"[{DateTime.Now:HH:mm:ss}] DOWNLOAD: {file.FileName}");
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+}

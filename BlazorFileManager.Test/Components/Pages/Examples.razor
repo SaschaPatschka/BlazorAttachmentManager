@@ -1,0 +1,607 @@
+@page "/examples"
+@using BlazorFileManager.Components
+
+<div class="examples-page">
+    <div class="page-header">
+        <h1>📋 Beispiele</h1>
+        <p>Verschiedene Anwendungsfälle für das FileUploadManager Komponent</p>
+    </div>
+
+    <div class="examples-container">
+        
+        <div class="example-section">
+            <div class="example-header">
+                <h2>🖼️ Bildergalerie</h2>
+                <p>Nur Bilder, mit Vorschau und Größenbeschränkung</p>
+            </div>
+            <div class="example-content">
+                <FileUploadManager 
+                    @bind-Files="galleryImages"
+                    Title="Bildergalerie"
+                    Options="galleryOptions" />
+            </div>
+            <div class="example-code">
+                <details>
+                    <summary>Code anzeigen</summary>
+                    <pre><code>var galleryOptions = new FileUploadOptions
+{
+    MaxFileCount = 10,
+    MaxFileSize = 5 * 1024 * 1024, // 5MB
+    AllowedFileTypes = new List&lt;string&gt; 
+    { 
+        "image/jpeg", "image/png", "image/gif", "image/webp" 
+    },
+    AcceptAttribute = "image/*",
+    ShowPreview = true
+};</code></pre>
+                </details>
+            </div>
+        </div>
+
+        <div class="example-section">
+            <div class="example-header">
+                <h2>📄 Dokumente</h2>
+                <p>PDFs und Word-Dokumente für Verträge, Rechnungen, etc.</p>
+            </div>
+            <div class="example-content">
+                <FileUploadManager 
+                    @bind-Files="documents"
+                    Title="Dokumente hochladen"
+                    Options="documentOptions" />
+            </div>
+            <div class="example-code">
+                <details>
+                    <summary>Code anzeigen</summary>
+                    <pre><code>var documentOptions = new FileUploadOptions
+{
+    MaxFileCount = 20,
+    MaxFileSize = 20 * 1024 * 1024, // 20MB
+    AllowedFileTypes = new List&lt;string&gt; 
+    { 
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    },
+    AcceptAttribute = ".pdf,.doc,.docx"
+};</code></pre>
+                </details>
+            </div>
+        </div>
+
+        <div class="example-section">
+            <div class="example-header">
+                <h2>📎 Ticket-Anhänge</h2>
+                <p>Kompakter Upload für Support-Tickets</p>
+            </div>
+            <div class="example-content">
+                <FileUploadManager 
+                    @bind-Files="ticketAttachments"
+                    Title="Ticket-Anhänge"
+                    Options="ticketOptions"
+                    OnFileUploaded="OnTicketFileAdded">
+                    <FooterTemplate>
+                        @if (ticketAttachments.Any())
+                        {
+                            <div style="padding: 0.75rem; background: #e7f3ff; border-radius: 6px; margin-top: 0.5rem;">
+                                <small>
+                                    💡 <strong>Tipp:</strong> Sie können auch Screenshots direkt mit Strg+V einfügen!
+                                </small>
+                            </div>
+                        }
+                    </FooterTemplate>
+                </FileUploadManager>
+            </div>
+        </div>
+
+        <div class="example-section">
+            <div class="example-header">
+                <h2>🎨 Custom Design</h2>
+                <p>Vollständig angepasstes Design mit Templates</p>
+            </div>
+            <div class="example-content">
+                <FileUploadManager @bind-Files="customFiles" Options="customDesignOptions">
+                    <HeaderTemplate>
+                        <div class="custom-header">
+                            <div class="custom-header-content">
+                                <h3>✨ Mein Custom File Manager</h3>
+                                <div class="stats">
+                                    <span class="stat-item">
+                                        <strong>@customFiles.Count</strong> Dateien
+                                    </span>
+                                    <span class="stat-item">
+                                        <strong>@FormatBytes(customFiles.Sum(f => f.FileSize))</strong> gesamt
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </HeaderTemplate>
+
+                    <DropZoneTemplate>
+                        <div class="custom-dropzone">
+                            <div class="dropzone-icon">☁️</div>
+                            <h4>Dateien hochladen</h4>
+                            <p>Ziehen Sie Dateien hierher oder klicken Sie zum Durchsuchen</p>
+                        </div>
+                    </DropZoneTemplate>
+
+                    <FileItemTemplate Context="file">
+                        <div class="custom-file-item">
+                            <div class="file-icon-wrapper">
+                                @if (file.IsImage)
+                                {
+                                    <img src="@GetPreviewUrl(file)" alt="@file.FileName" class="file-thumbnail" />
+                                }
+                                else
+                                {
+                                    <div class="file-type-icon">
+                                        @GetFileIcon(file)
+                                    </div>
+                                }
+                            </div>
+                            <div class="file-details">
+                                <div class="file-name">@file.FileName</div>
+                                <div class="file-meta">
+                                    <span>@file.FormattedFileSize</span>
+                                    <span>•</span>
+                                    <span>@file.UploadDate.ToString("dd.MM.yyyy HH:mm")</span>
+                                </div>
+                            </div>
+                            <div class="file-actions">
+                                <button class="action-btn download" @onclick="() => DownloadFile(file)" title="Download">
+                                    ⬇️
+                                </button>
+                                <button class="action-btn delete" @onclick="() => DeleteCustomFile(file)" title="Löschen">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    </FileItemTemplate>
+                </FileUploadManager>
+            </div>
+        </div>
+
+        <div class="example-section">
+            <div class="example-header">
+                <h2>📊 Mit Event-Tracking</h2>
+                <p>Überwachen Sie alle Datei-Ereignisse in Echtzeit</p>
+            </div>
+            <div class="example-content">
+                <FileUploadManager 
+                    @bind-Files="trackedFiles"
+                    Title="Event Tracking Demo"
+                    OnFileUploaded="HandleFileUploaded"
+                    OnFileDeleted="HandleFileDeleted"
+                    OnFileDownloaded="HandleFileDownloaded" />
+
+                @if (eventLog.Any())
+                {
+                    <div class="event-log">
+                        <h4>📝 Event Log (letzte 10 Events)</h4>
+                        <div class="log-entries">
+                            @foreach (var log in eventLog.TakeLast(10).Reverse())
+                            {
+                                <div class="log-entry">
+                                    <span class="log-time">@log.Time</span>
+                                    <span class="log-type @log.Type.ToLower()">@log.Type</span>
+                                    <span class="log-message">@log.Message</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .examples-page {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        margin: 0 0 0.5rem;
+        color: #333;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: #666;
+        font-size: 1.1rem;
+    }
+
+    .examples-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .example-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .example-header {
+        padding: 1.5rem 2rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .example-header h2 {
+        margin: 0 0 0.5rem;
+        color: #333;
+        font-size: 1.5rem;
+    }
+
+    .example-header p {
+        margin: 0;
+        color: #666;
+    }
+
+    .example-content {
+        padding: 2rem;
+    }
+
+    .example-code {
+        padding: 0 2rem 2rem;
+    }
+
+    .example-code details {
+        background: #f8f9fa;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .example-code summary {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        background: #e9ecef;
+        font-weight: 600;
+        color: #495057;
+        user-select: none;
+    }
+
+    .example-code summary:hover {
+        background: #dee2e6;
+    }
+
+    .example-code pre {
+        margin: 0;
+        padding: 1.5rem;
+        background: #1e1e1e;
+        overflow-x: auto;
+    }
+
+    .example-code code {
+        color: #d4d4d4;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+
+    /* Custom Header Styles */
+    .custom-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .custom-header-content h3 {
+        margin: 0 0 0.75rem;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .stats {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .stat-item {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.9rem;
+    }
+
+    .stat-item strong {
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    /* Custom DropZone Styles */
+    .custom-dropzone {
+        text-align: center;
+        padding: 2.5rem;
+    }
+
+    .dropzone-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .custom-dropzone h4 {
+        margin: 0 0 0.5rem;
+        color: #333;
+    }
+
+    .custom-dropzone p {
+        margin: 0;
+        color: #666;
+    }
+
+    /* Custom File Item Styles */
+    .custom-file-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .custom-file-item:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    }
+
+    .file-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+    }
+
+    .file-thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .file-type-icon {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .file-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .file-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .file-meta {
+        font-size: 0.85rem;
+        color: #666;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .file-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: all 0.2s ease;
+        background: #f8f9fa;
+    }
+
+    .action-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .action-btn.download:hover {
+        background: #007bff;
+    }
+
+    .action-btn.delete:hover {
+        background: #dc3545;
+    }
+
+    /* Event Log Styles */
+    .event-log {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .event-log h4 {
+        margin: 0 0 1rem;
+        color: #333;
+    }
+
+    .log-entries {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .log-entry {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 4px;
+        font-family: 'Consolas', monospace;
+        font-size: 0.85rem;
+    }
+
+    .log-time {
+        color: #666;
+        font-weight: 600;
+    }
+
+    .log-type {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+
+    .log-type.upload {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .log-type.delete {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .log-type.download {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .log-message {
+        color: #495057;
+    }
+</style>
+
+@code {
+    private List<FileUploadItem> galleryImages = new();
+    private List<FileUploadItem> documents = new();
+    private List<FileUploadItem> ticketAttachments = new();
+    private List<FileUploadItem> customFiles = new();
+    private List<FileUploadItem> trackedFiles = new();
+    private List<LogEntry> eventLog = new();
+
+    private FileUploadOptions galleryOptions = new()
+    {
+        MaxFileCount = 10,
+        MaxFileSize = 5 * 1024 * 1024,
+        AllowedFileTypes = new List<string> { "image/jpeg", "image/png", "image/gif", "image/webp" },
+        AcceptAttribute = "image/*",
+        ShowPreview = true
+    };
+
+    private FileUploadOptions documentOptions = new()
+    {
+        MaxFileCount = 20,
+        MaxFileSize = 20 * 1024 * 1024,
+        AllowedFileTypes = new List<string> 
+        { 
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        },
+        AcceptAttribute = ".pdf,.doc,.docx"
+    };
+
+    private FileUploadOptions ticketOptions = new()
+    {
+        MaxFileCount = 5,
+        MaxFileSize = 10 * 1024 * 1024,
+        AllowPasteFromClipboard = true,
+        ShowPreview = true
+    };
+
+    private FileUploadOptions customDesignOptions = new()
+    {
+        MaxFileCount = 15,
+        MaxFileSize = 15 * 1024 * 1024,
+        AllowDelete = false
+    };
+
+    private Task OnTicketFileAdded(FileUploadItem file)
+    {
+        // Hier könnte man z.B. das File an einen Server senden
+        return Task.CompletedTask;
+    }
+
+    private void DeleteCustomFile(FileUploadItem file)
+    {
+        customFiles.Remove(file);
+    }
+
+    private void DownloadFile(FileUploadItem file)
+    {
+        // Download-Logik ist bereits im Komponent implementiert
+    }
+
+    private string GetPreviewUrl(FileUploadItem file)
+    {
+        return file.ThumbnailUrl ?? string.Empty;
+    }
+
+    private string GetFileIcon(FileUploadItem file)
+    {
+        if (file.IsPdf) return "📄";
+        if (file.ContentType.Contains("word")) return "📝";
+        if (file.ContentType.Contains("excel") || file.ContentType.Contains("spreadsheet")) return "📊";
+        if (file.ContentType.Contains("zip") || file.ContentType.Contains("rar")) return "📦";
+        return "📎";
+    }
+
+    private string FormatBytes(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private Task LogEvent(FileUploadItem file, string eventType = "UPLOAD")
+    {
+        eventLog.Add(new LogEntry
+        {
+            Time = DateTime.Now.ToString("HH:mm:ss"),
+            Type = eventType,
+            Message = $"{file.FileName} ({file.FormattedFileSize})"
+        });
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleFileUploaded(FileUploadItem file) => LogEvent(file, "UPLOAD");
+    private Task HandleFileDeleted(FileUploadItem file) => LogEvent(file, "DELETE");
+    private Task HandleFileDownloaded(FileUploadItem file) => LogEvent(file, "DOWNLOAD");
+
+    private class LogEntry
+    {
+        public string Time { get; set; } = "";
+        public string Type { get; set; } = "";
+        public string Message { get; set; } = "";
+    }
+}

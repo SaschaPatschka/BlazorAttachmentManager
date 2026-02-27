@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="BlazorFileManager.Test/BlazorFileManager.Test.csproj" />
+  <Project Path="BlazorFileManager/BlazorFileManager.csproj" />
+</Solution>
