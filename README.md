@@ -19,16 +19,6 @@ Ein wiederverwendbares Blazor-Komponent für Datei-Upload, -Download und -Vorsch
 - ✅ Validierung (Dateigröße, Dateityp, Anzahl)
 - ✅ Öffentliche API für programmgesteuerten Upload
 
-## 🆕 Version 2.0 - Konsistente Dateiverarbeitung
-
-**Alle Dateien werden jetzt gleich behandelt!**
-
-- ✅ Clipboard-Bilder nutzen Storage Service (wenn konfiguriert)
-- ✅ Clipboard-Bilder respektieren AutoUpload Setting
-- ✅ Clipboard-Bilder erscheinen in Pending Files (bei AutoUpload=false)
-- ✅ Eine Upload-Pipeline für alle Quellen
-- ✅ Siehe [CHANGELOG.md](CHANGELOG.md) für Details
-
 ## Installation
 
 1. Fügen Sie das Projekt als Referenz hinzu
