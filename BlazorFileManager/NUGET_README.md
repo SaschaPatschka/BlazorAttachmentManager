@@ -5,20 +5,20 @@
 
 A comprehensive, production-ready Blazor component for file upload, download, and preview with advanced features.
 
-## ? Key Features
+## Key Features
 
-- ?? **Multiple Upload Methods**: Browse, Drag & Drop, Clipboard Paste (Ctrl+V)
-- ??? **Pluggable Storage**: Local filesystem, in-memory, or custom backends (Azure, AWS ready)
-- ? **Upload Modes**: Automatic or manual (staged) upload workflow
-- ?? **Multi-Language**: Built-in English, German, French + custom translations (40+ labels)
-- ?? **Fully Customizable**: RenderFragment templates for all UI elements
-- ??? **Smart Previews**: Image thumbnails with automatic storage caching
-- ?? **Auto-Compression**: Reduce large images automatically with quality control
-- ? **Validation**: File size, type, and count limits with user-friendly messages
-- ?? **Type-Safe**: Full C# 12 and .NET 8 support with nullable reference types
-- ?? **Responsive**: Mobile-friendly UI with touch support
+- **Multiple Upload Methods**: Browse, Drag & Drop, Clipboard Paste (Ctrl+V)
+- **Pluggable Storage**: Local filesystem, in-memory, or custom backends (Azure, AWS ready)
+- **Upload Modes**: Automatic or manual (staged) upload workflow
+- **Multi-Language**: Built-in English, German, French + custom translations (40+ labels)
+- **Fully Customizable**: RenderFragment templates for all UI elements
+- **Smart Previews**: Image thumbnails with automatic storage caching
+- **Auto-Compression**: Reduce large images automatically with quality control
+- **Validation**: File size, type, and count limits with user-friendly messages
+- **Type-Safe**: Full C# 12 and .NET 8 support with nullable reference types
+- **Responsive**: Mobile-friendly UI with touch support
 
-## ?? Quick Start
+## Quick Start
 
 ### 1. Installation
 
@@ -67,7 +67,7 @@ builder.Services.AddFileManagerCustomStorage<YourStorageService>();
 }
 ```
 
-## ?? Advanced Usage
+## Advanced Usage
 
 ### Manual Upload (Staged Files)
 
@@ -176,7 +176,7 @@ Available templates:
 }
 ```
 
-## ?? Features in Detail
+## Features in Detail
 
 ### Clipboard Paste
 Users can paste images directly from clipboard (Ctrl+V):
@@ -203,23 +203,14 @@ Built-in validation with user-friendly error messages:
 - Maximum file count
 - All messages customizable via `FileUploadLabels`
 
-## ?? Complete Documentation
 
-- **[Full Documentation](https://github.com/SaschaPatschka/BlazorAttachmentManager/blob/master/BlazorFileManager/README.md)**
-- **[Storage Service Guide](https://github.com/SaschaPatschka/BlazorAttachmentManager/blob/master/BlazorFileManager/STORAGE.md)**
-- **[Manual Upload Workflow](https://github.com/SaschaPatschka/BlazorAttachmentManager/blob/master/BlazorFileManager/MANUAL_UPLOAD.md)**
-- **[Localization Guide](https://github.com/SaschaPatschka/BlazorAttachmentManager/blob/master/BlazorFileManager/MULTILANGUAGE.md)**
-- **[Clipboard Behavior](https://github.com/SaschaPatschka/BlazorAttachmentManager/blob/master/BlazorFileManager/CLIPBOARD_BEHAVIOR.md)**
-- **[Code Examples](https://github.com/SaschaPatschka/BlazorAttachmentManager/blob/master/BlazorFileManager/EXAMPLES.md)**
-- **[Changelog](https://github.com/SaschaPatschka/BlazorAttachmentManager/blob/master/BlazorFileManager/CHANGELOG.md)**
-
-## ??? Requirements
+## Requirements
 
 - .NET 8.0 or later
 - Blazor Server or WebAssembly
 - Modern browser with File API support
 
-## ?? What's Included
+## What's Included
 
 - Razor Components (FileUploadManager, FileUploadItem, etc.)
 - Storage Service Interface & Implementations
@@ -229,7 +220,7 @@ Built-in validation with user-friendly error messages:
 - Multi-language Support (40+ labels)
 - Complete XML Documentation
 
-## ?? Version 2.0 Highlights
+## Version 1.0 Highlights
 
 - **Unified Upload Pipeline**: All file sources (browse, drag-drop, clipboard) use identical processing
 - **Storage Thumbnails**: Image previews cached from storage service
@@ -237,9 +228,9 @@ Built-in validation with user-friendly error messages:
 - **Manual Upload**: Deferred upload workflow with staged files queue
 - **ClipboardBrowserFile**: Clipboard images as first-class `IBrowserFile` instances
 
-See [CHANGELOG.md](https://github.com/SaschaPatschka/BlazorAttachmentManager/blob/master/BlazorFileManager/CHANGELOG.md) for migration guide.
 
-## ?? License
+
+## License
 
 MIT License - see [LICENSE](https://github.com/SaschaPatschka/BlazorAttachmentManager/blob/master/LICENSE)
 
@@ -251,11 +242,11 @@ Contributions, issues and feature requests are welcome!
 - **Issues**: [GitHub Issues](https://github.com/SaschaPatschka/BlazorAttachmentManager/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/SaschaPatschka/BlazorAttachmentManager/discussions)
 
-## ? Show Your Support
+## Show Your Support
 
-If this project helped you, please give it a ? on [GitHub](https://github.com/SaschaPatschka/BlazorAttachmentManager)!
+If this project helped you, please give it a thumb up on [GitHub](https://github.com/SaschaPatschka/BlazorAttachmentManager)!
 
-## ?? Author
+## Author
 
 **Sascha Patschka**
 
@@ -263,4 +254,3 @@ If this project helped you, please give it a ? on [GitHub](https://github.com/Sa
 
 ---
 
-Made with ?? for the Blazor community

@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+	  <IsPackable>true</IsPackable>
 
     <!-- NuGet Package Information -->
     <PackageId>BlazorFileManager</PackageId>
@@ -21,28 +22,23 @@
     <PackageReadmeFile>NUGET_README.md</PackageReadmeFile>
     <PackageReleaseNotes>Version 1.0.0: Unified upload pipeline with ClipboardBrowserFile, storage service thumbnail caching, comprehensive multi-language support (40+ labels), manual upload workflow, and enhanced error handling.</PackageReleaseNotes>
     <Copyright>Copyright � 2025 Sascha Patschka</Copyright>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <Title>Blazor FileManager</Title>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Include README for NuGet.org -->
-    <None Include="NUGET_README.md" Pack="true" PackagePath="\" />
-    <!-- Include all documentation files -->
-    <None Include="README.md" Pack="true" PackagePath="docs\" />
-    <None Include="STORAGE.md" Pack="true" PackagePath="docs\" />
-    <None Include="MANUAL_UPLOAD.md" Pack="true" PackagePath="docs\" />
-    <None Include="MULTILANGUAGE.md" Pack="true" PackagePath="docs\" />
-    <None Include="CLIPBOARD_BEHAVIOR.md" Pack="true" PackagePath="docs\" />
-    <None Include="EXAMPLES.md" Pack="true" PackagePath="docs\" />
-    <None Include="QUICKSTART.md" Pack="true" PackagePath="docs\" />
-    <None Include="CHANGELOG.md" Pack="true" PackagePath="docs\" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Folder Include="nupkg\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Include README for NuGet.org package page -->
+    <None Include="NUGET_README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
