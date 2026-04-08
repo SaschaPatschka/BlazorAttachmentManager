@@ -61,7 +61,7 @@ public class LocalFileStorageService : IFileStorageService
                 FileSize = fileInfo.Length,
                 ContentType = file.ContentType,
                 UploadDate = DateTime.Now,
-                // Store the unique filename in FileData for later retrieval
+                FilePath = Path.GetDirectoryName(filePath) ?? string.Empty,
                 FileData = System.Text.Encoding.UTF8.GetBytes(uniqueFileName)
             };
 

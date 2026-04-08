@@ -9,7 +9,7 @@
 
     <!-- NuGet Package Information -->
     <PackageId>BlazorFileManager</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Sascha Patschka</Authors>
     <Company>Sascha Patschka</Company>
     <Product>Blazor File Manager</Product>
@@ -20,8 +20,8 @@
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>NUGET_README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Version 1.0.0: Unified upload pipeline with ClipboardBrowserFile, storage service thumbnail caching, comprehensive multi-language support (40+ labels), manual upload workflow, and enhanced error handling.</PackageReleaseNotes>
-    <Copyright>Copyright � 2025 Sascha Patschka</Copyright>
+    <PackageReleaseNotes>Version 1.0.1: Unified upload pipeline with ClipboardBrowserFile, storage service thumbnail caching, comprehensive multi-language support (40+ labels), manual upload workflow, and enhanced error handling.</PackageReleaseNotes>
+    <Copyright>Copyright � 2026 Sascha Patschka</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
