@@ -146,6 +146,13 @@ public class LocalFileStorageService : IFileStorageService
         }
     }
 
+    public async Task<byte[]> GetFileBytesAsync(FileUploadItem fileItem)
+    {
+        return await GetFileBytesAsync(fileItem, CancellationToken.None);
+    }
+
+
+
     /// <inheritdoc />
     public Task<bool> FileExistsAsync(FileUploadItem fileItem, CancellationToken cancellationToken = default)
     {

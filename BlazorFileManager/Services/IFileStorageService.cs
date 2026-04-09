@@ -40,6 +40,7 @@ public interface IFileStorageService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A byte array containing the file content</returns>
     Task<byte[]> GetFileBytesAsync(FileUploadItem fileItem, CancellationToken cancellationToken = default);
+    Task<byte[]> GetFileBytesAsync(FileUploadItem fileItem);
 
     /// <summary>
     /// Checks if a file exists in storage
