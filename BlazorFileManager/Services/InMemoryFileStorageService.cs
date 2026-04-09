@@ -76,6 +76,18 @@ public class InMemoryFileStorageService : IFileStorageService
         return Task.FromResult(fileData);
     }
 
+    public Task<byte[]> GetFileBytesAsync(FileUploadItem fileItem)
+    {
+        var fileId = GetFileId(fileItem);
+
+        if (!_fileStorage.TryGetValue(fileId, out var fileData))
+        {
+            throw new FileNotFoundException($"File not found: {fileItem.FileName}");
+        }
+
+        return Task.FromResult(fileData);
+    }
+
     /// <inheritdoc />
     public Task<bool> FileExistsAsync(FileUploadItem fileItem, CancellationToken cancellationToken = default)
     {
